@@ -7,9 +7,13 @@ class ShopApi:
         self.url = API_URL
         self.token = API_TOKEN
 
+    async def get_main_category_info(self):
+        resp = await self.get_request(path=f"category/main")
+        return resp
+
     async def get_category_info(self, category_id: id):
         resp = await self.get_request(path=f'category/{category_id}')
-        print(resp)
+        return resp
 
     async def get_request(self, path: str, return_json: bool = True):
         header = {}
