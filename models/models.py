@@ -1,3 +1,4 @@
+from email.policy import default
 from tortoise import fields
 from tortoise.models import Model
 
@@ -8,6 +9,8 @@ class User(Model):
     # first_name: str = fields.CharField(null=True)
     # last_name: str = fields.CharField(null=True)
     profile: fields.OneToOneRelation = fields.OneToOneField(model_name="models.Profile", related_name="user", on_delete="CASCADE")
+    cart: fields.ReverseRelation["UserCart"]
+    favorites: fields.ReverseRelation["FavoriteProduct"]
 
 
 class Profile(Model):
@@ -19,4 +22,23 @@ class Profile(Model):
     city: str = fields.CharField(max_length=100, null=True)
     address: str = fields.TextField(null=True)
     user: fields.OneToOneRelation["User"]
+
+
+class UserCart(Model):
+    id: int = fields.IntField(pk=True)
+    user: fields.ForeignKeyRelation = fields.ForeignKeyField("models.User", related_name="cart")
+    product_id: int = fields.IntField()
+    quantity: int = fields.IntField(default=1)
+
+class FavoriteProduct(Model):
+    id: int = fields.IntField(pk=True)
+    user: fields.ForeignKeyRelation = fields.ForeignKeyField("models.User", related_name="favorites")
+    product_id: int = fields.IntField()
+
+class UploadPhoto(Model):
+    id: int = fields.IntField(pk=True)
+    path: str = fields.CharField(max_length=255)
+    photo_id: str = fields.CharField(max_length=255)
+
+
 

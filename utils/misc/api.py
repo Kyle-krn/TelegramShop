@@ -11,16 +11,20 @@ class ShopApi:
         resp = await self.get_request(path=f"category/main")
         return resp
 
-    async def get_category_info(self, category_id: id):
-        resp = await self.get_request(path=f'category/{category_id}')
+    async def get_product_info(self, product_id: id):
+        resp = await self.get_request(path=f'product/{product_id}', params={'active': 1})
         return resp
 
-    async def get_request(self, path: str, return_json: bool = True):
+    async def get_category_info(self, category_id: id):
+        resp = await self.get_request(path=f'category/{category_id}', params={'active': 1})
+        return resp
+
+    async def get_request(self, path: str, params: dict = {}, return_json: bool = True):
         header = {}
         # if token:
         header['Authorization'] = self.token
         request_url = f'{self.url}/{path}'
-        async with aiohttp.request('GET', request_url, headers=header) as response:
+        async with aiohttp.request('GET', request_url, headers=header, params=params) as response:
             return await response.json() if return_json else response
 
     async def post_request(self, path: str, data: dict = None, token: str = None, return_json: bool = True):
