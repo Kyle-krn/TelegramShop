@@ -34,7 +34,14 @@ async def product_handler(call: CallbackQuery):
     if data[2] == 'desc':
         text += f"<b>Описание</b> - {product['description']}"
     elif data[2] == 'attr':
-        print(product["attributes"])
+        for item in product["attributes"]:
+            if item['value'] is not None:
+                if item['value'] is True:
+                    item['value'] = "✅"
+                elif item['value'] is False:
+                    item['value'] = "❌"
+                text += f"<b>{item['name']}</b> - {item['value']} {item['prefix']}\n"
+        # print(product["attributes"])
     keyboard = await product_keyboard(photo_index=photo_indx,
                                       photo_list=product['photo'],
                                       desc_or_attr=data[2],
@@ -44,7 +51,7 @@ async def product_handler(call: CallbackQuery):
                                       quantity_max=product["quantity"],
                                       product_id=product['id'])
     
-    url = "https://4926-178-155-4-127.ngrok.io/static/" + photo[photo_indx]
+    url = "https://5fef-178-155-4-127.ngrok.io/static/" + photo[photo_indx]
 
     photo_id = await UploadPhoto.get_or_none(path=photo[photo_indx])
     

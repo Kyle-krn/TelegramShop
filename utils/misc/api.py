@@ -19,6 +19,25 @@ class ShopApi:
         resp = await self.get_request(path=f'category/{category_id}', params={'active': 1})
         return resp
 
+    async def get_category_light_info(self, 
+                                      category_id: int,
+                                      name: bool = False,
+                                      slug: bool = False,
+                                      filters: bool = False,
+                                      parent_id: bool = False,
+                                      childrens: bool = False,
+                                      products: bool = False):
+        params = {
+            "name": 1 if name else 0,
+            "slug": 1 if slug else 0,
+            "filters": 1 if filters else 0,
+            "parent_id": 1 if parent_id else 0,
+            "childrens": 1 if childrens else 0,
+            "products": 1 if products else 0,
+        }
+        resp = await self.get_request(path=f'category/light/{category_id}', params=params)
+        return resp
+
     async def get_request(self, path: str, params: dict = {}, return_json: bool = True):
         header = {}
         # if token:

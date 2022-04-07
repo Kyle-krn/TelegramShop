@@ -1,6 +1,6 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-async def back_keyboard(callback: str):
+async def back_keyboard(callback: str, text: str = "🔙 Назад"):
     keyboard = InlineKeyboardMarkup()
-    keyboard.add(InlineKeyboardButton(text="🔙 Назад", callback_data=callback))
+    keyboard.add(InlineKeyboardButton(text=text, callback_data=callback))
     return keyboard

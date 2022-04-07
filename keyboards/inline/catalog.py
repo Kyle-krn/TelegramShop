@@ -18,17 +18,17 @@ async def category_keyboard(category):
                 button_text += f" ({len(children['products'])})"
             keyboard.add(InlineKeyboardButton(text=button_text, callback_data=f"category:{children['id']}"))
     keyboard.add(await back_button(category))
-    # if category["parent"]:
-    #     keyboard.add(InlineKeyboardButton(text="🔙 Назад", callback_data=f"category:{category['parent']['id']}"))
-    # else:
-    #     keyboard.add(InlineKeyboardButton(text="🔙 Назад", callback_data=f"main_category:"))
+
     return keyboard
 
-# call = "product:{product_id}:{"desc" or "attr"}:{photo_index}:{count}"
+# call = "product:{product_id}:{"desc" or "attr"}:{photo_index}"
 async def product_catalog_keyboard(category):
     keyboard = InlineKeyboardMarkup()
-    # print(category)
+    search_button = False
     for product in category["products"]:
+        if search_button is False:
+            search_button = True
+            keyboard.add(InlineKeyboardButton(text="Фильтрация 🔍", callback_data=f"settings_filters:{category['id']}"))
         keyboard.add(InlineKeyboardButton(text=product["name"], callback_data=f"product:{product['id']}:desc:0"))
     keyboard.add(await back_button(category))
     return keyboard

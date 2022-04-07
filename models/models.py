@@ -1,3 +1,4 @@
+from decimal import Decimal
 from email.policy import default
 from tortoise import fields
 from tortoise.models import Model
@@ -8,9 +9,11 @@ class User(Model):
     username: str = fields.CharField(max_length=255, null=True)
     # first_name: str = fields.CharField(null=True)
     # last_name: str = fields.CharField(null=True)
-    profile: fields.OneToOneRelation = fields.OneToOneField(model_name="models.Profile", related_name="user", on_delete="CASCADE")
+    # profile: fields.OneToOneRelation = fields.OneToOneField(model_name="models.Profile", related_name="user", on_delete="CASCADE")
     cart: fields.ReverseRelation["UserCart"]
+    profile: fields.ReverseRelation["Profile"]
     favorites: fields.ReverseRelation["FavoriteProduct"]
+    search_data: fields.ReverseRelation["SearchUserData"]
 
 
 class Profile(Model):
@@ -21,8 +24,16 @@ class Profile(Model):
     postcode: int = fields.IntField(null=True)
     city: str = fields.CharField(max_length=100, null=True)
     address: str = fields.TextField(null=True)
-    user: fields.OneToOneRelation["User"]
+    user: fields.ForeignKeyRelation = fields.ForeignKeyField("models.User", related_name="profile")
+    # user: fields.OneToOneRelation["User"]
 
+
+class SearchUserData(Model):
+    id: int = fields.IntField(pk=True)
+    min_price: Decimal = fields.DecimalField(null=True, max_digits=1000, decimal_places=2)
+    max_price: Decimal = fields.DecimalField(null=True, max_digits=1000, decimal_places=2)
+    user: fields.ForeignKeyRelation = fields.ForeignKeyField("models.User", related_name="search_data")
+    attrs = fields.JSONField(null=True)
 
 class UserCart(Model):
     id: int = fields.IntField(pk=True)
