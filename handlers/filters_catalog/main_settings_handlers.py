@@ -7,7 +7,10 @@ from models.models import SearchUserData, User
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher import FSMContext
 from tortoise.queryset import Q
+
+
 class Price(StatesGroup):
+    '''Состояния для введения суммы стоймости'''
     min_price = State()  
     max_price = State()
 
@@ -15,10 +18,8 @@ class Price(StatesGroup):
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'filtering_catalog')
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'back_filters_category')
 async def filtering_catalog_handler(call: CallbackQuery):
+    '''Отдает список отфильтрованных товаров в категории'''
     category_id = int(call.data.split(":")[2])
-    
-    # search_data = await SearchUserData.get(user__tg_id=call.message.chat.id)
-    # search_data = await SearchUserData.get_or_create(user=user, category_id=category_id)
     search_data = await SearchUserData.get(Q(user__tg_id=call.message.chat.id) & Q(category_id=category_id))
     search_data.search = True
     if search_data.attrs == []:
@@ -35,7 +36,6 @@ async def filtering_catalog_handler(call: CallbackQuery):
     offset = (page - 1) * limit
     category = await api.get_category_light_info(category_id, parent_id=True)
     products = await api.get_products_queryset(category_id, body=data, offset=offset, limit=limit)
-
     max_page = (products['count'] // limit) + 1 if products['count'] % limit else  products['count'] // limit
     reply_markup = await product_catalog_keyboard(products['products'], parent_id=category['parent_id'], category_id=category_id, page=page, max_page=max_page, filters=True)
     text = "Выберите товар"
@@ -45,31 +45,21 @@ async def filtering_catalog_handler(call: CallbackQuery):
     return await call.message.edit_text(text=text, reply_markup=reply_markup)
 
 
-@dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'delete_filter')
-async def delete_category_filter(call: CallbackQuery):
-    category_id = int(call.data.split(':')[1])
-    search_data = await SearchUserData.get(Q(user__tg_id=call.message.chat.id) & Q(category_id=category_id))
-    await search_data.delete()
-    await call.answer("Настройки поиска успешно изменены.")
-    call.data = f"settings_filters:{category_id}"
-    return await setting_filters_handler(call)
-
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'settings_filters')
 async def setting_filters_handler(call: CallbackQuery):
+    '''Настройки фильтров'''
     category = await api.get_category_light_info(category_id=call.data.split(':')[1], filters=True, products=True)
-    # await state.finish()
     user = await User.get(tg_id=call.message.chat.id)
     search_data = await SearchUserData.get_or_create(user=user, category_id=category['id'])
     search_data = search_data[0]
-    print(search_data)
-    if search_data.attrs:
-        print('\n')
-        print("*"* 20)
-        for i in search_data.attrs:
-            print('\n')
-            print('-'*20)
-            print(i)
-            print('-'*20)
+    # if search_data.attrs:
+    #     print('\n')
+    #     print("*"* 20)
+    #     for i in search_data.attrs:
+    #         print('\n')
+    #         print('-'*20)
+    #         print(i)
+    #         print('-'*20)
     amount_list = [i["price"] for i in category["products"]]
     kwargs = {
         'category_id': category['id'],
@@ -85,7 +75,7 @@ async def setting_filters_handler(call: CallbackQuery):
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'min_price')
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'max_price')
 async def min_price_handler(call: CallbackQuery):
-    
+    '''Указать мин/макс цену товара'''
     if call.data.split(':')[0] == 'min_price':
         await Price.min_price.set()
         text='<b>Введите минимальную цену:</b>'
@@ -94,13 +84,12 @@ async def min_price_handler(call: CallbackQuery):
         text='<b>Введите максимальную цену:</b>'    
     state = dp.get_current().current_state()
     await state.update_data(category_id=int(call.data.split(':')[1]))
-    # print(f"filter_catalog:{call.data.split(':')[1]}")
     await call.message.edit_text(text=text, reply_markup=await back_keyboard(callback=f"cancel_state_filtering:{call.data.split(':')[1]}"))
 
 
 @dp.message_handler(state=Price)
 async def process_price_invalid(message: Message, state: FSMContext):
-    # current_state = await state.get_state()
+    '''Валидация введеных данных и если успешно то устанавливает новые значения в фильтре'''
     user_data = await state.get_data()
     keyboard = await back_keyboard(callback=f"cancel_state_filtering:{user_data['category_id']}")
     try:
@@ -129,11 +118,20 @@ async def process_price_invalid(message: Message, state: FSMContext):
         
 
 
-
+@dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'delete_filter')
+async def delete_category_filter(call: CallbackQuery):
+    '''Обнуляет фильтры в выбранной категории'''
+    category_id = int(call.data.split(':')[1])
+    search_data = await SearchUserData.get(Q(user__tg_id=call.message.chat.id) & Q(category_id=category_id))
+    await search_data.delete()
+    await call.answer("Настройки поиска успешно изменены.")
+    call.data = f"settings_filters:{category_id}"
+    return await setting_filters_handler(call)
 
 
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'cancel_state_filtering', state=Price)
 async def cancel_state(call: CallbackQuery, state: FSMContext):
+    '''Позоволяет скинуть состояние и не вводить данные'''
     await state.finish()
     call.data = f"settings_filters:{call.data.split(':')[1]}"
     return await setting_filters_handler(call)

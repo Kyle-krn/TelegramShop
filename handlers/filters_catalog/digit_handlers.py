@@ -1,4 +1,3 @@
-from typing import Type
 from loader import dp
 from aiogram.types import CallbackQuery, Message
 from aiogram.dispatcher import FSMContext
@@ -7,6 +6,7 @@ from models.models import SearchUserData
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from keyboards.inline import back_keyboard, digit_keyboard
 from tortoise.queryset import Q
+
 class DigitAttr(StatesGroup):
     min = State()  
     max = State()
@@ -14,6 +14,7 @@ class DigitAttr(StatesGroup):
 
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'digit_filter')
 async def digit_filter_handler(call: CallbackQuery):
+    '''Фильтр для типов значений int float, позволяет указать диапазон поиска от мин до макс'''
     attr_name = call.data.split(':')[1]
     category_id = int(call.data.split(':')[2])
     search_data = await SearchUserData.get(Q(user__tg_id=call.message.chat.id) & Q(category_id=category_id))
@@ -45,6 +46,7 @@ async def digit_filter_handler(call: CallbackQuery):
 
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'reset_digit')
 async def reset_filter_handler(call: CallbackQuery):
+    '''Устанавливает стандартный диапазон'''
     attr_name = call.data.split(':')[1]
     category_id = int(call.data.split(':')[2])
     search_data = await SearchUserData.get(Q(user__tg_id=call.message.chat.id) & Q(category_id=category_id))
@@ -55,13 +57,14 @@ async def reset_filter_handler(call: CallbackQuery):
 
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'min_attr')
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'max_attr')
-async def min_price_handler(call: CallbackQuery):    
+async def min_price_handler(call: CallbackQuery):  
+    '''Выбор между мин и макс'''  
     if call.data.split(':')[0] == 'min_attr':
         await DigitAttr.min.set()
-        text='<b>Введите минимальную ??:</b>'
+        text='<b>Введите минимальное значение:</b>'
     else:
         await DigitAttr.max.set()
-        text='<b>Введите максимальную ??:</b>'    
+        text='<b>Введите максимальное значение:</b>'    
     state = dp.get_current().current_state()
     
     kwargs = {
@@ -74,6 +77,7 @@ async def min_price_handler(call: CallbackQuery):
 
 @dp.message_handler(state=DigitAttr)
 async def process_price_invalid(message: Message, state: FSMContext):
+    '''Валидация и установка новых значений при успешной валидации'''
     user_data = await state.get_data()          #cds - cancel_digit_state
     keyboard = await back_keyboard(callback=f"cds:digit_filter:{user_data['attr_name']}:{user_data['category_id']}")
     category = await api.get_category_light_info(category_id=user_data['category_id'], filters=True)
@@ -114,9 +118,9 @@ async def process_price_invalid(message: Message, state: FSMContext):
     
 
 
-#cds - cancel_digit_state
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'cds', state=DigitAttr)
 async def cancel_state(call: CallbackQuery, state: FSMContext):
+    '''Позоволяет скинуть состояние и вернуться к настройкам'''
     await state.finish()
     call.data = ":".join(call.data.split(':')[1:])
     return await digit_filter_handler(call)

@@ -9,10 +9,10 @@ from tortoise.queryset import Q
 
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'bool_filter')
 async def boolean_filter_handlers(call: CallbackQuery):
+    '''Фильтр для булевых значений позовляет указать true or false '''
     name_attr = call.data.split(':')[1]
     category_id = int(call.data.split(':')[2])
     search_data = await SearchUserData.get(Q(user__tg_id=call.message.chat.id) & Q(category_id=category_id))
-    # print(name_attr, category_id)
     category = await api.get_category_light_info(category_id=category_id, filters=True)
     attr_in_data = [i for i in search_data.attrs if i['name'] == name_attr] if search_data.attrs is not None else None
     if attr_in_data:
@@ -34,6 +34,7 @@ async def boolean_filter_handlers(call: CallbackQuery):
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'bool_false')
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'bool_none')
 async def bool_yes_handler(call: CallbackQuery):
+    '''Устанавливает значение'''
     category_id = int(call.data.split(':')[2])
     search_data = await SearchUserData.get(Q(user__tg_id=call.message.chat.id) & Q(category_id=category_id))
     name_attr = call.data.split(':')[1]

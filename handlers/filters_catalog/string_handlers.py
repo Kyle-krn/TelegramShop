@@ -8,6 +8,7 @@ from tortoise.queryset import Q
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'str_filter')
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'list_filter')
 async def string_filter_handler(call: CallbackQuery):
+    '''Позоволяет выбрать значения для типов list и str (предпологается что в списках будут храниться только str и вестись только like поиск по этому атрибуту)'''
     name_attr = call.data.split(':')[1]
     category_id = int(call.data.split(':')[2])
     search_data = await SearchUserData.get(Q(user__tg_id=call.message.chat.id) & Q(category_id=category_id))
@@ -18,8 +19,8 @@ async def string_filter_handler(call: CallbackQuery):
     attr_in_category = [i for i in category['filters'] if i['name'] == name_attr]
     if len(attr_in_category) == 0:
         raise IndexError(f"Атрибут с таким именем не найден")
-    # if type(attr_in_category) != list:
-    #     raise TypeError(f"Вместо list {type(attr_in_category)}")
+    if type(attr_in_category[0]['value']) not in [list, str]:
+        raise TypeError(f"Вместо list {type(attr_in_category)}")
     if attr_in_data:
         for item in attr_in_data:
             if type(item) != str:
@@ -38,6 +39,7 @@ async def string_filter_handler(call: CallbackQuery):
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'str_append')
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'str_remove')
 async def control_string_filter(call: CallbackQuery):
+    '''добавляет или убирает значение в массив поиска'''
     search_data = await SearchUserData.get(user__tg_id=call.message.chat.id)
     name_attr = call.data.split(':')[1]
     value = call.data.split(':')[2]
@@ -48,7 +50,6 @@ async def control_string_filter(call: CallbackQuery):
     elif attr_in_data == []:
         search_data.attrs.append({'name': name_attr, 'value': [value], 'min': None, 'max': None})
     else:
-        # attr_in_data = attr_in_data
         if call.data.split(':')[0] == 'str_append':
             attr_in_data[0]['value'].append(value)
         elif call.data.split(':')[0] == 'str_remove':
