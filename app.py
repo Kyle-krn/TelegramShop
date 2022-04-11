@@ -1,6 +1,6 @@
 from aiogram import executor
 from data.config import TORTOISE_ORM
-# from tortoise import Tortoise
+from tortoise import Tortoise
 
 from loader import dp, db
 import middlewares, filters, handlers

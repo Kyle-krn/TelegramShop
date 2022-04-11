@@ -11,6 +11,6 @@ async def bot_start(message: types.Message):
     if not user:
         user = await User.create(tg_id=message.chat.id, username=message.chat.username)
         await Profile.create(user=user)
-        await SearchUserData.create(user=user) 
+        # await SearchUserData.create(user=user) 
     await message.answer(text=f"Привет, {message.from_user.full_name}!",
                         reply_markup=await main_keyborad())

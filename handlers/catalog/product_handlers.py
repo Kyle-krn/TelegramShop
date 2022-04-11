@@ -6,7 +6,7 @@ from aiogram.types.input_media import InputMediaPhoto
 from utils.misc import api 
 from data.config import API_URL
 from keyboards.inline import product_keyboard
-from models.models import FavoriteProduct, UploadPhoto, User, UserCart
+from models.models import FavoriteProduct, SearchUserData, UploadPhoto, User, UserCart
 from tortoise.queryset import Q
 
 # call = "product:{product_id}:{"desc" or "attr"}:{photo_index}:{count}"
@@ -42,16 +42,25 @@ async def product_handler(call: CallbackQuery):
                     item['value'] = "❌"
                 text += f"<b>{item['name']}</b> - {item['value']} {item['prefix']}\n"
         # print(product["attributes"])
+    catalog_page = int(call.data.split(':')[4])
+    search_data = await SearchUserData.get_or_none(user=user, category_id=product['category_id'])
+    if search_data:
+        search_bool = search_data.search
+    else:
+        search_bool = False
+    # print(search_data.search)
     keyboard = await product_keyboard(photo_index=photo_indx,
                                       photo_list=product['photo'],
                                       desc_or_attr=data[2],
-                                      category_id=product['category']['id'],
+                                      category_id=product['category_id'],
                                       cart=cart,
                                       favorite=favorite,
                                       quantity_max=product["quantity"],
-                                      product_id=product['id'])
+                                      product_id=product['id'],
+                                      page=catalog_page,
+                                      search_user=search_bool)
     
-    url = "https://5fef-178-155-4-127.ngrok.io/static/" + photo[photo_indx]
+    url = "https://6f16-178-155-4-151.ngrok.io/static/" + photo[photo_indx]
 
     photo_id = await UploadPhoto.get_or_none(path=photo[photo_indx])
     

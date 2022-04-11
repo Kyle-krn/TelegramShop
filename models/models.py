@@ -1,8 +1,9 @@
 from decimal import Decimal
 from email.policy import default
-from tortoise import fields
+from unicodedata import category
+from tortoise import Tortoise, fields
 from tortoise.models import Model
-
+from data import config
 class User(Model):
     id: int = fields.IntField(pk=True)
     tg_id: int = fields.BigIntField(unique=True)
@@ -11,7 +12,7 @@ class User(Model):
     # last_name: str = fields.CharField(null=True)
     # profile: fields.OneToOneRelation = fields.OneToOneField(model_name="models.Profile", related_name="user", on_delete="CASCADE")
     cart: fields.ReverseRelation["UserCart"]
-    profile: fields.ReverseRelation["Profile"]
+    profile: fields.OneToOneRelation["Profile"]
     favorites: fields.ReverseRelation["FavoriteProduct"]
     search_data: fields.ReverseRelation["SearchUserData"]
 
@@ -24,7 +25,7 @@ class Profile(Model):
     postcode: int = fields.IntField(null=True)
     city: str = fields.CharField(max_length=100, null=True)
     address: str = fields.TextField(null=True)
-    user: fields.ForeignKeyRelation = fields.ForeignKeyField("models.User", related_name="profile")
+    user: fields.OneToOneRelation = fields.OneToOneField("models.User", related_name="profile")
     # user: fields.OneToOneRelation["User"]
 
 
@@ -34,6 +35,10 @@ class SearchUserData(Model):
     max_price: Decimal = fields.DecimalField(null=True, max_digits=1000, decimal_places=2)
     user: fields.ForeignKeyRelation = fields.ForeignKeyField("models.User", related_name="search_data")
     attrs = fields.JSONField(null=True)
+    search: bool = fields.BooleanField(default=False)
+    category_id: int = fields.IntField() 
+
+
 
 class UserCart(Model):
     id: int = fields.IntField(pk=True)
@@ -53,3 +58,4 @@ class UploadPhoto(Model):
 
 
 
+# Tortoise.init(config.TORTOISE_ORM)
