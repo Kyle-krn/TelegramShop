@@ -77,12 +77,12 @@ async def product_keyboard(category_id: int,
         keyboard.add(photo_button, next_photo)
     
     if favorite:
-        favorite_button = InlineKeyboardButton(text="Убрать из избранного ⭐", callback_data=f"remove_favorite:{product_id}:{desc_or_attr}:{photo_index}:{page}")
+        favorite_button = InlineKeyboardButton(text="Из избранного ⭐", callback_data=f"remove_favorite:{product_id}:{desc_or_attr}:{photo_index}:{page}")
     else:
-        favorite_button = InlineKeyboardButton(text="Добавить в избранное ⭐", callback_data=f"add_favorite:{product_id}:{desc_or_attr}:{photo_index}:{page}")
+        favorite_button = InlineKeyboardButton(text="В избранное ⭐", callback_data=f"add_favorite:{product_id}:{desc_or_attr}:{photo_index}:{page}")
     
     if not cart:
-        add_to_cart_button = InlineKeyboardButton(text="Добавить в корзину 🛒", callback_data=f"add_in_cart:{product_id}:{desc_or_attr}:{photo_index}:{page}")
+        add_to_cart_button = InlineKeyboardButton(text="В корзину 🛒", callback_data=f"add_in_cart:{product_id}:{desc_or_attr}:{photo_index}:{page}")
         
         keyboard.add(add_to_cart_button, favorite_button)
     else:

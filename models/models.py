@@ -4,6 +4,7 @@ from unicodedata import category
 from tortoise import Tortoise, fields
 from tortoise.models import Model
 from data import config
+
 class User(Model):
     id: int = fields.IntField(pk=True)
     tg_id: int = fields.BigIntField(unique=True)
@@ -55,6 +56,12 @@ class UploadPhoto(Model):
     id: int = fields.IntField(pk=True)
     path: str = fields.CharField(max_length=255)
     photo_id: str = fields.CharField(max_length=255)
+
+
+class ArchiveStringAttrs(Model):
+    '''Костыль, фиксит ошибку клавиатуры, в callback максимум 32 кирилические буквы влезает, это крайне мало'''
+    id: int = fields.IntField(pk=True)
+    string: str = fields.CharField(max_length=255, unique=True)
 
 
 
