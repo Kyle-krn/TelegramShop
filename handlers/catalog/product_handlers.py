@@ -14,12 +14,19 @@ async def product_handler(call: CallbackQuery):
     product = await api.get_product_info(call.data.split(':')[1])
     user = await User.get(tg_id=call.message.chat.id)
     cart = await user.cart.filter(product_id=product['id'])
+
     favorite = await user.favorites.filter(product_id=product['id'])
     if product['quantity'] <= 0 or product['is_active'] is False:
         '''Не даем доступ юзерам к товару который нельзя купить'''
         await call.message.delete()
+        if len(cart) > 0:
+            await cart[0].delete()
         return await call.message.answer(text="К сожалению данный товар не доступен.", 
-                                         reply_markup=await back_keyboard(callback=f"category:{product['category']['id']}"))
+                                             reply_markup=await back_keyboard(callback=f"category:{product['category']['id']}"))
+    if len(cart) > 0 and cart[0].quantity > product['quantity']:
+        cart[0].quantity = product['quantity']
+        await call.answer(f"Максимальное кол-во товара - {product['quantity']} шт.")
+        await cart[0].save()
     photo = product["photo"]
     data = call.data.split(':')
     photo_indx = int(data[3])
@@ -40,8 +47,8 @@ async def product_handler(call: CallbackQuery):
                 elif item['value'] is False:
                     item['value'] = "❌"
                 text += f"<b>{item['name']}</b> - {item['value']} {item['prefix']}\n"
-    catalog_page = int(call.data.split(':')[4]) # Для кнопки назад, что бы возвращало нужную страницу
-    
+    catalog_page = int(data[4]) # Для кнопки назад, что бы возвращало нужную страницу
+    catalog_or_cart = data[5]
     search_data = await SearchUserData.get_or_none(user=user, category_id=product['category_id'])
     if search_data:
         '''Если true то идет поиск с фильтрами, для корректного возвращения на фильтрованный queryset'''
@@ -57,9 +64,10 @@ async def product_handler(call: CallbackQuery):
                                       quantity_max=product["quantity"],
                                       product_id=product['id'],
                                       page=catalog_page,
-                                      search_user=search_bool)
+                                      search_user=search_bool,
+                                      catalog_or_cart = catalog_or_cart)
     
-    url = "https://6f16-178-155-4-151.ngrok.io/static/" + photo[photo_indx]
+    url = "https://bc82-178-155-4-151.ngrok.io/static/" + photo[photo_indx]
 
     photo_id = await UploadPhoto.get_or_none(path=photo[photo_indx])
     

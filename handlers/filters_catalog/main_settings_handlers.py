@@ -65,7 +65,8 @@ async def setting_filters_handler(call: CallbackQuery):
         'category_id': category['id'],
         'min_price': min(amount_list) if not search_data.min_price else search_data.min_price,
         'max_price': max(amount_list) if not search_data.max_price else search_data.max_price,
-        'filters': category['filters']
+        'filters': category['filters'],
+        'user_data_attrs': search_data.attrs
     }
     keyboard = await filtering_products_keyboard(**kwargs)
     await call.message.delete()

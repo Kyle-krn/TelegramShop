@@ -46,6 +46,7 @@ class UserCart(Model):
     user: fields.ForeignKeyRelation = fields.ForeignKeyField("models.User", related_name="cart")
     product_id: int = fields.IntField()
     quantity: int = fields.IntField(default=1)
+    active: bool = fields.BooleanField(default=True)
 
 class FavoriteProduct(Model):
     id: int = fields.IntField(pk=True)

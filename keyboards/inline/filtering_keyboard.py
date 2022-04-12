@@ -1,7 +1,7 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from models.models import ArchiveStringAttrs
 
-async def filtering_products_keyboard(category_id: int,min_price:int, max_price: int, filters: list):
+async def filtering_products_keyboard(category_id: int,min_price:int, max_price: int, filters: list, user_data_attrs: list):
     keyboard = InlineKeyboardMarkup()
     min_price_button = InlineKeyboardButton(text=f"Мин. цена: {min_price} руб.", callback_data=f"min_price:{category_id}")
     max_price_button = InlineKeyboardButton(text=f"Макс. цена: {max_price} руб.", callback_data=f"max_price:{category_id}")
@@ -12,16 +12,16 @@ async def filtering_products_keyboard(category_id: int,min_price:int, max_price:
         callback = None
         if type(item['value']) == bool:
             callback = f"bool_filter:{attr_name_archive[0].id}:{category_id}"
-            # keyboard.add(InlineKeyboardButton(text=item['name'], callback_data="bool_filter" + callback))
         elif type(item['value']) in [int, float]:
             callback = f"digit_filter:{attr_name_archive[0].id}:{category_id}"
         elif type(item['value']) in [str, list]:
             callback = f"str_filter:{attr_name_archive[0].id}:{category_id}"
-        # elif type(item['value']) == list:
-        #     callback = f"str_filter:{item['name']}:{category_id}"
+
         if callback:
-            keyboard.add(InlineKeyboardButton(text=item['name'], callback_data=callback))
-                                                                             # all_products_page:{page}:{product['category_id']}"
+            user_attr = [i for i in user_data_attrs if i['name'] == item['name']] if user_data_attrs else []
+            text = item['name'] if len(user_attr) == 0 else f"{item['name']} ✅"
+            keyboard.add(InlineKeyboardButton(text=text, callback_data=callback))
+                                                                             
     keyboard.add(InlineKeyboardButton(text=f"Найти товары 🔎", callback_data=f"filtering_catalog:1:{category_id}"))
     keyboard.add(InlineKeyboardButton(text=f"Фильтры по умолчанию", callback_data=f"delete_filter:{category_id}"))
     keyboard.add(InlineKeyboardButton(text=f"🔙 Назад", callback_data=f"category:{category_id}"))

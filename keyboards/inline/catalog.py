@@ -27,7 +27,7 @@ async def product_catalog_keyboard(products: list, parent_id: int, category_id: 
     keyboard = InlineKeyboardMarkup()
     keyboard.add(InlineKeyboardButton(text="Фильтрация 🔍", callback_data=f"settings_filters:{category_id}"))
     for product in products:            
-        keyboard.add(InlineKeyboardButton(text=product["name"], callback_data=f"product:{product['id']}:desc:0:{page}"))
+        keyboard.add(InlineKeyboardButton(text=product["name"], callback_data=f"product:{product['id']}:desc:0:{page}:cat"))
 
     if filters:
         callback = 'filtering_catalog'
@@ -63,12 +63,13 @@ async def product_keyboard(category_id: int,
                            quantity_max: int,
                            product_id: int,
                            page: int,
-                           search_user: bool):
+                           search_user: bool,
+                           catalog_or_cart: str):
     keyboard = InlineKeyboardMarkup()
     
-    prev_photo = InlineKeyboardButton(text="⬅️", callback_data=f"list_photo:{product_id}:{desc_or_attr}:{photo_index-1}:{page}") if photo_index > 0 else None
+    prev_photo = InlineKeyboardButton(text="⬅️", callback_data=f"list_photo:{product_id}:{desc_or_attr}:{photo_index-1}:{page}:{catalog_or_cart}") if photo_index > 0 else None
     photo_button = InlineKeyboardButton(text=f"{photo_index+1}/{len(photo_list)} 📸", callback_data="empty_call:")
-    next_photo = InlineKeyboardButton(text="➡️", callback_data=f"list_photo:{product_id}:{desc_or_attr}:{photo_index+1}:{page}") if photo_index + 1 < len(photo_list) else None
+    next_photo = InlineKeyboardButton(text="➡️", callback_data=f"list_photo:{product_id}:{desc_or_attr}:{photo_index+1}:{page}:{catalog_or_cart}") if photo_index + 1 < len(photo_list) else None
     if prev_photo and next_photo:
         keyboard.add(prev_photo, photo_button, next_photo)
     elif prev_photo:
@@ -77,19 +78,19 @@ async def product_keyboard(category_id: int,
         keyboard.add(photo_button, next_photo)
     
     if favorite:
-        favorite_button = InlineKeyboardButton(text="Из избранного ⭐", callback_data=f"remove_favorite:{product_id}:{desc_or_attr}:{photo_index}:{page}")
+        favorite_button = InlineKeyboardButton(text="Из избранного ⭐", callback_data=f"remove_favorite:{product_id}:{desc_or_attr}:{photo_index}:{page}:{catalog_or_cart}")
     else:
-        favorite_button = InlineKeyboardButton(text="В избранное ⭐", callback_data=f"add_favorite:{product_id}:{desc_or_attr}:{photo_index}:{page}")
+        favorite_button = InlineKeyboardButton(text="В избранное ⭐", callback_data=f"add_favorite:{product_id}:{desc_or_attr}:{photo_index}:{page}:{catalog_or_cart}")
     
     if not cart:
-        add_to_cart_button = InlineKeyboardButton(text="В корзину 🛒", callback_data=f"add_in_cart:{product_id}:{desc_or_attr}:{photo_index}:{page}")
+        add_to_cart_button = InlineKeyboardButton(text="В корзину 🛒", callback_data=f"add_in_cart:{product_id}:{desc_or_attr}:{photo_index}:{page}:{catalog_or_cart}")
         
         keyboard.add(add_to_cart_button, favorite_button)
     else:
-        # quantity = cart[0].quantity
-        minus_button = InlineKeyboardButton(text="➖", callback_data=f"minus_c:{product_id}:{desc_or_attr}:{photo_index}:{page}") if cart[0].quantity > 0 else None
-        quantity_button = InlineKeyboardButton(text=f"{cart[0].quantity} шт. 🛒", callback_data=f"add_in_cart:{product_id}:{page}") 
-        plus_button = InlineKeyboardButton(text="➕", callback_data=f"plus_c:{product_id}:{desc_or_attr}:{photo_index}:{page}") if cart[0].quantity < quantity_max else None
+        # quantity = cart[0].quantity           # cat - catalog
+        minus_button = InlineKeyboardButton(text="➖", callback_data=f"minus_c:{product_id}:{desc_or_attr}:{photo_index}:{page}:{catalog_or_cart}") if cart[0].quantity > 0 else None
+        quantity_button = InlineKeyboardButton(text=f"{cart[0].quantity} шт. 🛒", callback_data=f"add_in_cart:{product_id}:{page}:{catalog_or_cart}") 
+        plus_button = InlineKeyboardButton(text="➕", callback_data=f"plus_c:{product_id}:{desc_or_attr}:{photo_index}:{page}:{catalog_or_cart}") if cart[0].quantity < quantity_max else None
         if minus_button and plus_button:
             keyboard.add(minus_button, quantity_button, plus_button)
         elif minus_button:
@@ -99,16 +100,23 @@ async def product_keyboard(category_id: int,
         keyboard.add(favorite_button)
 
     if desc_or_attr == "desc":
-        attr_desc_button = InlineKeyboardButton(text="Характеристики товара 📜", callback_data=f"product:{product_id}:attr:{photo_index}:{page}")
+        attr_desc_button = InlineKeyboardButton(text="Характеристики товара 📜", callback_data=f"product:{product_id}:attr:{photo_index}:{page}:{catalog_or_cart}")
     elif desc_or_attr == "attr":
-        attr_desc_button = InlineKeyboardButton(text="Описание товара 📜", callback_data=f"product:{product_id}:desc:{photo_index}:{page}")
+        attr_desc_button = InlineKeyboardButton(text="Описание товара 📜", callback_data=f"product:{product_id}:desc:{photo_index}:{page}:{catalog_or_cart}")
     keyboard.add(attr_desc_button)
 
-    if search_user:
-        callback = "back_filters_category"
-    else:
-        callback = "back_category"
-    keyboard.add(InlineKeyboardButton(text="🔙 Назад", callback_data=f"{callback}:{page}:{category_id}"))
+    if catalog_or_cart == 'cat':
+        if search_user:
+            callback = "back_filters_category"
+        else:
+            callback = "back_category"
+        back_button = InlineKeyboardButton(text="🔙 Назад", callback_data=f"{callback}:{page}:{category_id}")
+    
+    elif catalog_or_cart == 'cart':
+        callback = "cart"
+        back_button = InlineKeyboardButton(text="🔙 Назад", callback_data=f"{callback}:{page}")
+    keyboard.add(back_button)
+    
     return keyboard
 
 
