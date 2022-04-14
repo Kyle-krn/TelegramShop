@@ -1,10 +1,12 @@
+import imp
 from loader import dp
 from aiogram.types import CallbackQuery
 from models.models import SearchUserData
 from utils.misc import api
-from keyboards.inline import string_keyboard
+from keyboards.inline import back_keyboard, string_keyboard
 from tortoise.queryset import Q
 from models.models import ArchiveStringAttrs
+import logging
 
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'str_filter')
 async def string_filter_handler(call: CallbackQuery):
@@ -19,16 +21,25 @@ async def string_filter_handler(call: CallbackQuery):
         attr_in_data = attr_in_data[0]['value']
     attr_in_category = [i for i in category['filters'] if i['name'] == name_attr.string]
     if len(attr_in_category) == 0:
-        raise IndexError(f"Атрибут с таким именем не найден")
+        return await call.message.edit_text(text=f'Атриубт {name_attr.string} был удален.', 
+                                            reply_markup=await back_keyboard(callback=f'settings_filters:{category_id}'))
     if type(attr_in_category[0]['value']) not in [list, str]:
         raise TypeError(f"Вместо list {type(attr_in_category)}")
     if attr_in_data:
+
         for item in attr_in_data:
             if type(item) != str:
-                raise TypeError(f"Вместо str {type(item)}")
+                logging.error(f"Атрибут {item} у юзера имеет {type(item)}")
+                return await call.message.edit_text(text=f'Произошла ошибка.', 
+                                            reply_markup=await back_keyboard(callback=f'settings_filters:{category_id}'))
     
 
     distinct_values = await api.get_distinct_string_value(category_id=category_id, attr_name=name_attr.string)
+    if distinct_values == [None] or distinct_values == []:
+        '''Если атрибут есть в категории, но во всех значениях null'''
+        return await call.message.edit_text(text=f'У атриубта {name_attr.string} не задано параметров.', 
+                                            reply_markup=await back_keyboard(callback=f'settings_filters:{category_id}'))
+    
     keyboard = await string_keyboard(attr_name_id=name_attr.id, category_id=category_id, distinct_value_list=distinct_values, user_values=attr_in_data)
     await call.message.edit_text(text="Выберите параметр ⬇", reply_markup=keyboard)
 

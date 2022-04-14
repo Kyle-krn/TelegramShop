@@ -3,7 +3,7 @@ from loader import dp
 from utils.misc import api
 from aiogram.types import CallbackQuery
 from models.models import SearchUserData
-from keyboards.inline import boolean_keyboard
+from keyboards.inline import back_keyboard, boolean_keyboard
 from aiogram.utils.exceptions import MessageNotModified
 from tortoise.queryset import Q
 from models.models import ArchiveStringAttrs
@@ -20,9 +20,10 @@ async def boolean_filter_handlers(call: CallbackQuery):
     if attr_in_data:
         attr_in_data = attr_in_data[0]['value']
     attr_in_category = [i for i in category['filters'] if i['name'] == name_attr.string]
-    
     if len(attr_in_category) == 0:
-        raise IndexError(f"Атрибут с таким именем не найден")
+        return await call.message.edit_text(text=f'Атриубт {name_attr.string} был удален.', 
+                                            reply_markup=await back_keyboard(callback=f'settings_filters:{category_id}'))
+    
     if type(attr_in_category[0]['value']) != bool:
         raise TypeError(f"Вместо bool {type(attr_in_category)}")
     try:

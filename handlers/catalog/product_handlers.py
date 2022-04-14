@@ -6,12 +6,17 @@ from data.config import API_URL
 from keyboards.inline import product_keyboard
 from models.models import FavoriteProduct, SearchUserData, UploadPhoto, User, UserCart
 from tortoise.queryset import Q
+from datetime import datetime, timedelta
 
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'product')
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'list_photo')
 async def product_handler(call: CallbackQuery):
     '''Представление товара'''
+    # if 
     product = await api.get_product_info(call.data.split(':')[1])
+    print(product, "\n")
+    if 'detail' in product:
+        return await call.message.edit_text(text='<b>К сожалению товар был удален.</b>')
     user = await User.get(tg_id=call.message.chat.id)
     cart = await user.cart.filter(product_id=product['id'])
 
@@ -22,7 +27,7 @@ async def product_handler(call: CallbackQuery):
         if len(cart) > 0:
             await cart[0].delete()
         return await call.message.answer(text="К сожалению данный товар не доступен.", 
-                                             reply_markup=await back_keyboard(callback=f"category:{product['category']['id']}"))
+                                             reply_markup=await back_keyboard(callback=f"category:{product['category_id']}"))
     if len(cart) > 0 and cart[0].quantity > product['quantity']:
         cart[0].quantity = product['quantity']
         await call.answer(f"Максимальное кол-во товара - {product['quantity']} шт.")
@@ -67,7 +72,7 @@ async def product_handler(call: CallbackQuery):
                                       search_user=search_bool,
                                       catalog_or_cart = catalog_or_cart)
     
-    url = "https://bc82-178-155-4-151.ngrok.io/static/" + photo[photo_indx]
+    url = "https://3eda-178-155-4-151.ngrok.io/static/" + photo[photo_indx]
 
     photo_id = await UploadPhoto.get_or_none(path=photo[photo_indx])
     
@@ -122,6 +127,8 @@ async def control_quantity(call: CallbackQuery):
     product_id = int(call.data.split(':')[1])
     callback_for_product_handler = "product:" + ":".join(call.data.split(':')[1:])
     product = await api.get_product_info(product_id)
+    if 'detail' in product:
+        return await call.message.edit_text(text='<b>К сожалению товар был удален.</b>')
     quantity_max = product["quantity"]
     cart_item = await UserCart.get(Q(user__tg_id=call.message.chat.id) & Q(product_id=product_id))
     if call.data.split(':')[0] == 'plus_c':

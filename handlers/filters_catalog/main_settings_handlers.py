@@ -52,22 +52,17 @@ async def setting_filters_handler(call: CallbackQuery):
     user = await User.get(tg_id=call.message.chat.id)
     search_data = await SearchUserData.get_or_create(user=user, category_id=category['id'])
     search_data = search_data[0]
-    # if search_data.attrs:
-    #     print('\n')
-    #     print("*"* 20)
-    #     for i in search_data.attrs:
-    #         print('\n')
-    #         print('-'*20)
-    #         print(i)
-    #         print('-'*20)
     amount_list = [i["price"] for i in category["products"]]
-    kwargs = {
-        'category_id': category['id'],
-        'min_price': min(amount_list) if not search_data.min_price else search_data.min_price,
-        'max_price': max(amount_list) if not search_data.max_price else search_data.max_price,
-        'filters': category['filters'],
-        'user_data_attrs': search_data.attrs
-    }
+    try:
+        kwargs = {
+            'category_id': category['id'],
+            'min_price': min(amount_list) if not search_data.min_price else search_data.min_price,
+            'max_price': max(amount_list) if not search_data.max_price else search_data.max_price,
+            'filters': category['filters'],
+            'user_data_attrs': search_data.attrs
+        }
+    except ValueError:
+        return await call.message.edit_text("Произошла ошибка.")
     keyboard = await filtering_products_keyboard(**kwargs)
     await call.message.delete()
     await call.message.answer(text='Вы можете выбрать параметры ниже', reply_markup=keyboard)

@@ -27,6 +27,7 @@ async def main_cart_handler(products: list, user_cart:list, page: int, max_page:
     next = page + 1 <= max_page
 
     if checkout:
+        keyboard.add(InlineKeyboardButton(text="Оформить и оплатить заказ 📦", callback_data=f"payments_order:"))
         keyboard.add(InlineKeyboardButton(text="Назад", callback_data=f"cart:1"))
     else:
         keyboard.add(InlineKeyboardButton(text="К оформлению 📮", callback_data=f"checkout:None"))
@@ -38,4 +39,10 @@ async def main_cart_handler(products: list, user_cart:list, page: int, max_page:
         keyboard.add(page_button, next_button)
     return keyboard
 
+
+async def choice_delivery():
+    keyboard = InlineKeyboardMarkup()
+    keyboard.add(InlineKeyboardButton(text='Почта РФ', callback_data="delivery:pochta_rf"))
+    keyboard.add(InlineKeyboardButton(text='Назад ⬅️', callback_data="checkout:"))
+    return keyboard
     

@@ -5,7 +5,7 @@ from aiogram.dispatcher import DEFAULT_RATE_LIMIT
 from aiogram.dispatcher.handler import CancelHandler, current_handler
 from aiogram.dispatcher.middlewares import BaseMiddleware
 from aiogram.utils.exceptions import Throttled
-
+from datetime import datetime, timedelta
 
 class ThrottlingMiddleware(BaseMiddleware):
     """
@@ -35,3 +35,20 @@ class ThrottlingMiddleware(BaseMiddleware):
     async def message_throttled(self, message: types.Message, throttled: Throttled):
         if throttled.exceeded_count <= 2:
             await message.reply("Too many requests!")
+
+
+
+class TimeMiddleware(BaseMiddleware):
+    """
+    Simple middleware
+    """
+
+    def __init__(self):
+        super(TimeMiddleware, self).__init__()
+
+    
+    async def on_process_callback_query(self, call: types.CallbackQuery, data: dict):
+        # print(call.message.date < (datetime.now() + timedelta(minutes=1)))
+        if datetime.now() > (call.message.date + timedelta(minutes=20)):
+            await call.answer('У этой кнопки истекло время жизни.')
+            raise CancelHandler()

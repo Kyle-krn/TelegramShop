@@ -17,16 +17,22 @@ async def digit_filter_handler(call: CallbackQuery):
     '''Фильтр для типов значений int float, позволяет указать диапазон поиска от мин до макс'''
     attr_name_id = call.data.split(':')[1]
     attr_name = await ArchiveStringAttrs.get(id=int(attr_name_id))
-    # attr_name = attr_name.string
     category_id = int(call.data.split(':')[2])
     search_data = await SearchUserData.get(Q(user__tg_id=call.message.chat.id) & Q(category_id=category_id))
     category = await api.get_category_light_info(category_id=category_id, filters=True)
     attr_in_category = [i for i in category['filters'] if i['name'] == attr_name.string]
     if len(attr_in_category) == 0:
-        raise IndexError(f"Атрибут с таким именем не найден")
+        '''Если атрибут с таким именем не был найден'''
+        return await call.message.edit_text(text=f'Атриубт {attr_name.string} был удален.', 
+                                            reply_markup=await back_keyboard(callback=f'settings_filters:{category_id}'))
     if type(attr_in_category[0]['value']) not in [int, float]:
         raise IndexError(f"Атрибут {attr_name.string} не является числом.")
+
     min_max = await api.get_min_max_digit_attr(category_id=category_id, attr_name=attr_name.string)
+    if min_max['max'] is None or min_max['min'] is None:
+        '''Если атрибут существует, но все его значения это null'''
+        return await call.message.edit_text(text=f'У атриубта {attr_name.string} не задано параметров.', 
+                                            reply_markup=await back_keyboard(callback=f'settings_filters:{category_id}'))
     attr_in_data = [i for i in search_data.attrs if i['name'] == attr_name.string] if search_data.attrs is not None else []
     if attr_in_data:
         attr_in_data = attr_in_data[0]
