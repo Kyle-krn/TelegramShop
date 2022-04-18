@@ -9,14 +9,11 @@ class User(Model):
     id: int = fields.IntField(pk=True)
     tg_id: int = fields.BigIntField(unique=True)
     username: str = fields.CharField(max_length=255, null=True)
-    # first_name: str = fields.CharField(null=True)
-    # last_name: str = fields.CharField(null=True)
-    # profile: fields.OneToOneRelation = fields.OneToOneField(model_name="models.Profile", related_name="user", on_delete="CASCADE")
     cart: fields.ReverseRelation["UserCart"]
     profile: fields.OneToOneRelation["Profile"]
     favorites: fields.ReverseRelation["FavoriteProduct"]
     search_data: fields.ReverseRelation["SearchUserData"]
-
+    # orders: fields.ReverseRelation["UserOrder"]
 
 class Profile(Model):
     id: int = fields.IntField(pk=True)
@@ -27,7 +24,6 @@ class Profile(Model):
     city: str = fields.CharField(max_length=100, null=True)
     address: str = fields.TextField(null=True)
     user: fields.OneToOneRelation = fields.OneToOneField("models.User", related_name="profile")
-    # user: fields.OneToOneRelation["User"]
 
 
 class SearchUserData(Model):
@@ -38,7 +34,6 @@ class SearchUserData(Model):
     attrs = fields.JSONField(null=True)
     search: bool = fields.BooleanField(default=False)
     category_id: int = fields.IntField() 
-
 
 
 class UserCart(Model):
@@ -65,5 +60,8 @@ class ArchiveStringAttrs(Model):
     string: str = fields.CharField(max_length=255, unique=True)
 
 
+# class UserOrder(Model):
+#     user: fields.ForeignKeyRelation = fields.ForeignKeyField("models.User", related_name="orders")
+#     shipping_option: str = fields.
 
 # Tortoise.init(config.TORTOISE_ORM)

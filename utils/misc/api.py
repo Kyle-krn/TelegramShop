@@ -1,5 +1,8 @@
+from typing import List
 from data.config import API_TOKEN, API_URL
 import aiohttp
+
+from models.models import UserCart
 
 class ShopApi:
     
@@ -60,7 +63,48 @@ class ShopApi:
         params = {'offset': offset, 'limit': limit}
         resp = await self.post_request(path=f'product/query_by_category/{category_id}', data=body, params=params)
         return resp
+
+    async def get_city_courier(self, city: str):
+        params = {'city': city}
+        resp = await self.get_request(path=f'delivery/get-courier-city', params=params)
+        return resp
+
+    async def get_distinct_city_pick_up(self):
+        resp = await self.get_request(path=f'delivery/get-distinct-city-pickup-point')
+        return resp
+    
+    async def create_order(self,
+                           shipping_amount: int,
+                           order_amount: float,
+                           shipping_option: str, 
+                           order_info: dict, 
+                           tg_id: int, 
+                           username: str, 
+                           cart: List[UserCart]):
+        name = order_info.name.split(' ')
+        data = {
+            'tg_id': tg_id,
+            'tg_username': username,
+            "first_name": name[0], 
+            "last_name": name[1] if len(name) == 2 else None, 
+            "patronymic_name": name[2] if len(name) == 3 else None, 
+            "phone_number": order_info.phone_number, 
+            "region": order_info.shipping_address.state, 
+            "city": order_info.shipping_address.city, 
+            "address1": order_info.shipping_address.street_line1, 
+            "address2": order_info.shipping_address.street_line2, 
+            "postcode": int(order_info.shipping_address.post_code), 
+            "shipping_type": shipping_option,
+            "shipping_amount": shipping_amount,
+            "amount": order_amount,
+            "products": [] 
+        }
+        for item in cart:
+            data['products'].append({'id': item.product_id, 'quantity': item.quantity})
         
+        resp = await self.post_request(path='orders/create-shipping-order', data=data)
+        return resp
+
     async def get_request(self, path: str, params: dict = {}, return_json: bool = True):
         header = {}
         # if token:
@@ -69,7 +113,11 @@ class ShopApi:
         async with aiohttp.request('GET', request_url, headers=header, params=params) as response:
             return await response.json() if return_json else response
 
-    async def post_request(self, path: str, data: dict = None, params: dict = {}, token: str = None, return_json: bool = True):
+    async def post_request(self, 
+                           path: str, 
+                           data: dict = None, 
+                           params: dict = {}, 
+                           return_json: bool = True):
         header = {}
         # if token:
         header['Authorization'] = self.token
