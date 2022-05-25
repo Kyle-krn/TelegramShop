@@ -1,4 +1,3 @@
-from unicodedata import category
 from loader import dp
 from utils.misc import api
 from aiogram.types import CallbackQuery

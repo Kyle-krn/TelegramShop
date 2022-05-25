@@ -72,6 +72,17 @@ class ShopApi:
     async def get_distinct_city_pick_up(self):
         resp = await self.get_request(path=f'delivery/get-distinct-city-pickup-point')
         return resp
+
+
+    async def get_city_pick_up(self, city: str):
+        params = {'city': city}
+        resp = await self.get_request(path=f'delivery/get-city-pickup-point', params=params)
+        return resp
+        
+
+    async def get_pick_up(self, pp_id: str):
+        resp = await self.get_request(path=f'delivery/get-pickup-point/{pp_id}')
+        return resp
     
     async def create_order(self,
                            shipping_amount: int,
@@ -86,8 +97,8 @@ class ShopApi:
             'tg_id': tg_id,
             'tg_username': username,
             "first_name": name[0], 
-            "last_name": name[1] if len(name) == 2 else None, 
-            "patronymic_name": name[2] if len(name) == 3 else None, 
+            "last_name": name[1] if len(name) > 1 else None, 
+            "patronymic_name": name[2] if len(name) > 2 else None, 
             "phone_number": order_info.phone_number, 
             "region": order_info.shipping_address.state, 
             "city": order_info.shipping_address.city, 
@@ -105,6 +116,48 @@ class ShopApi:
         resp = await self.post_request(path='orders/create-shipping-order', data=data)
         return resp
 
+    async def create_pp_order(self, 
+                             order_amount: float,
+                             shipping_option: str, 
+                             order_info: dict, 
+                             tg_id: int, 
+                             username: str, 
+                             cart: List[UserCart],
+                             pp_id: int):
+        name = order_info.name.split(' ')
+        data = {
+                "tg_id": tg_id,
+                "tg_username": username, 
+                "first_name": name[0],  
+                "last_name": name[1] if len(name) > 1 else None,  
+                "patronymic_name": name[2] if len(name) > 2 else None,  
+                "phone_number": order_info.phone_number,  
+                "shipping_type": shipping_option,
+                "amount": order_amount,
+                "pickup_point_id": pp_id,
+                "products": []
+        }
+        for item in cart:
+            data['products'].append({'id': item.product_id, 'quantity': item.quantity})
+        
+        resp = await self.post_request(path='orders/create-pp-order', data=data)
+        return resp
+
+    async def get_user_order(self, tg_id: int):
+        resp = await self.get_request(path=f'orders/get-order-by-tg-id/{tg_id}')
+        return resp
+
+    async def get_order(self, order_id: int):
+        resp = await self.get_request(path=f'orders/get-order/{order_id}')
+        return resp
+
+    async def pochta_rf(self, postcode: int, weight: int = 1):
+        data = {
+            'postcode': postcode,
+            'weight': weight,
+        }
+        return await self.post_request(path='pochta_rf/delivery_price', data=data)
+    
     async def get_request(self, path: str, params: dict = {}, return_json: bool = True):
         header = {}
         # if token:

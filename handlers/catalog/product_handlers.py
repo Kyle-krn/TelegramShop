@@ -51,7 +51,10 @@ async def product_handler(call: CallbackQuery):
                     item['value'] = "✅"
                 elif item['value'] is False:
                     item['value'] = "❌"
-                text += f"<b>{item['name']}</b> - {item['value']} {item['prefix']}\n"
+                if isinstance(item['value'], list):
+                    text += f"<b>{item['name']}</b> - {', '.join([i for i in item['value']])}\n"  
+                else:
+                    text += f"<b>{item['name']}</b> - {item['value']} {item['prefix']}\n"
     catalog_page = int(data[4]) # Для кнопки назад, что бы возвращало нужную страницу
     catalog_or_cart = data[5]
     search_data = await SearchUserData.get_or_none(user=user, category_id=product['category_id'])
@@ -72,7 +75,7 @@ async def product_handler(call: CallbackQuery):
                                       search_user=search_bool,
                                       catalog_or_cart = catalog_or_cart)
     
-    url = "https://3eda-178-155-4-151.ngrok.io/static/" + photo[photo_indx]
+    url = f"{API_URL}/static/" + photo[photo_indx]
 
     photo_id = await UploadPhoto.get_or_none(path=photo[photo_indx])
     

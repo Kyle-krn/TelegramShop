@@ -5,15 +5,18 @@ from tortoise import Tortoise, fields
 from tortoise.models import Model
 from data import config
 
+
 class User(Model):
     id: int = fields.IntField(pk=True)
     tg_id: int = fields.BigIntField(unique=True)
     username: str = fields.CharField(max_length=255, null=True)
+    
     cart: fields.ReverseRelation["UserCart"]
     profile: fields.OneToOneRelation["Profile"]
     favorites: fields.ReverseRelation["FavoriteProduct"]
     search_data: fields.ReverseRelation["SearchUserData"]
     # orders: fields.ReverseRelation["UserOrder"]
+
 
 class Profile(Model):
     id: int = fields.IntField(pk=True)
@@ -55,6 +58,12 @@ class UploadPhoto(Model):
 
 
 class ArchiveStringAttrs(Model):
+    '''Костыль, фиксит ошибку клавиатуры, в callback максимум 32 кирилические буквы влезает, это крайне мало'''
+    id: int = fields.IntField(pk=True)
+    string: str = fields.CharField(max_length=255, unique=True)
+
+
+class Test(Model):
     '''Костыль, фиксит ошибку клавиатуры, в callback максимум 32 кирилические буквы влезает, это крайне мало'''
     id: int = fields.IntField(pk=True)
     string: str = fields.CharField(max_length=255, unique=True)
