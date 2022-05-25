@@ -4,8 +4,10 @@
 поиск по атрибутам, карточки товаров с несколькими фото и корзину. В телеграм боте используются - TortoiseORM, Aiogram, Postgresql.
 
 ---
-1. Каталог 
-![Alt Text](https://s8.gifyu.com/images/17d1b127ec216822b.gif)
+1. Каталог
+![Alt Text](https://i.gifer.com/3OMH7.gif)
+2. Фильтрация каталога по атрибутам
 
+3. Корзина
 
-![Alt Text](https://s10.gifyu.com/images/list_product_category_create_all.gif)
+4. Заказы 
