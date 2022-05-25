@@ -5,9 +5,10 @@
 
 ---
 1. Каталог
-![Alt Text](https://i.gifer.com/3OMH7.gif)
+![Alt Text](https://s8.gifyu.com/images/116b5b0b3d2ddaa8b.gif)
 2. Фильтрация каталога по атрибутам
 
 3. Корзина
 
 4. Заказы 
+
