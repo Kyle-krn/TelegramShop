@@ -10,11 +10,11 @@ ADMINS = env.list("ADMINS")  # Тут у нас будет список из а�
 API_URL = env.str("API_URL")
 API_TOKEN = env.str("API_TOKEN")
 PAYMENTS_PROVIDER_TOKEN = env.str("PAYMENTS_PROVIDER_TOKEN")
-USER = "postgres"
-PASSWORD = "123"
-HOST = "localhost"
+USER = ""
+PASSWORD = ""
+HOST = ""
 PORT = 5432
-DATABASE = "postgres"
+DATABASE = ""
 
 POSTGRES_URI = f"postgres://{USER}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}"
 
