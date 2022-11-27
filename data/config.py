@@ -6,15 +6,15 @@ env.read_env()
 
 BOT_TOKEN = env.str("BOT_TOKEN")  # Забираем значение типа str
 ADMINS = env.list("ADMINS")  # Тут у нас будет список из админов
-# IP = env.str("ip")  # Тоже str, но для айпи адреса хоста
+# IP = env.str("ip") # Тоже str, но для айпи адреса хоста
 API_URL = env.str("API_URL")
 API_TOKEN = env.str("API_TOKEN")
 PAYMENTS_PROVIDER_TOKEN = env.str("PAYMENTS_PROVIDER_TOKEN")
-USER = "vfpflwrv"
-PASSWORD = "ooDYh8eT9H9fOfAo3sP7HeSl46orHyfC"
-HOST = "abul.db.elephantsql.com"
-PORT = 5432
-DATABASE = "vfpflwrv"
+USER = env.str("USER")
+PASSWORD = env.str("PASSWORD")
+HOST = env.str("HOST")
+PORT = env.int("PORT")
+DATABASE = env.str("DATABASE")
 
 POSTGRES_URI = f"postgres://{USER}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}"
 
