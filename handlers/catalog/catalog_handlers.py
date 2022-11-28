@@ -45,7 +45,7 @@ async def category_handler(call: CallbackQuery):
         )
         text = "Выберите товар"
     else:
-        text = "У данной категории отсутствуют товары товары"
+        text = "У данной категории отсутствуют товары и подкатегории"
         reply_markup = await category_keyboard(category)
     if call.data.split(":")[0] == "category":
         await call.message.edit_text(text=text, reply_markup=reply_markup)
