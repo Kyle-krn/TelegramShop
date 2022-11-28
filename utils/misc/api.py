@@ -163,17 +163,15 @@ class ShopApi:
         return await self.post_request(path="pochta_rf/delivery_price", data=data)
 
     async def get_request(self, path: str, params: dict = {}, return_json: bool = True):
-        header = {}
+        header = {"Authorization": self.token}
         # if token:
-        header["Authorization"] = self.token
         request_url = f"{self.url}/{path}"
         async with aiohttp.request("GET", request_url, headers=header, params=params) as response:
             return await response.json() if return_json else response
 
     async def post_request(self, path: str, data: dict = None, params: dict = {}, return_json: bool = True):
-        header = {}
+        header = {"Authorization": self.token}
         # if token:
-        header["Authorization"] = self.token
         request_url = f"{self.url}/{path}"
         async with aiohttp.request("POST", request_url, headers=header, params=params, json=data) as response:
             return await response.json() if return_json else response
