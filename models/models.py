@@ -10,7 +10,7 @@ class User(Model):
     id: int = fields.IntField(pk=True)
     tg_id: int = fields.BigIntField(unique=True)
     username: str = fields.CharField(max_length=255, null=True)
-    
+
     cart: fields.ReverseRelation["UserCart"]
     profile: fields.OneToOneRelation["Profile"]
     favorites: fields.ReverseRelation["FavoriteProduct"]
@@ -36,7 +36,7 @@ class SearchUserData(Model):
     user: fields.ForeignKeyRelation = fields.ForeignKeyField("models.User", related_name="search_data")
     attrs = fields.JSONField(null=True)
     search: bool = fields.BooleanField(default=False)
-    category_id: int = fields.IntField() 
+    category_id: int = fields.IntField()
 
 
 class UserCart(Model):
@@ -46,10 +46,12 @@ class UserCart(Model):
     quantity: int = fields.IntField(default=1)
     active: bool = fields.BooleanField(default=True)
 
+
 class FavoriteProduct(Model):
     id: int = fields.IntField(pk=True)
     user: fields.ForeignKeyRelation = fields.ForeignKeyField("models.User", related_name="favorites")
     product_id: int = fields.IntField()
+
 
 class UploadPhoto(Model):
     id: int = fields.IntField(pk=True)
@@ -58,13 +60,15 @@ class UploadPhoto(Model):
 
 
 class ArchiveStringAttrs(Model):
-    '''Костыль, фиксит ошибку клавиатуры, в callback максимум 32 кирилические буквы влезает, это крайне мало'''
+    """Костыль, фиксит ошибку клавиатуры, в callback максимум 32 кирилические буквы влезает, это крайне мало"""
+
     id: int = fields.IntField(pk=True)
     string: str = fields.CharField(max_length=255, unique=True)
 
 
 class Test(Model):
-    '''Костыль, фиксит ошибку клавиатуры, в callback максимум 32 кирилические буквы влезает, это крайне мало'''
+    """Костыль, фиксит ошибку клавиатуры, в callback максимум 32 кирилические буквы влезает, это крайне мало"""
+
     id: int = fields.IntField(pk=True)
     string: str = fields.CharField(max_length=255, unique=True)
 
